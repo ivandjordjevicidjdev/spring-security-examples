@@ -1,39 +1,26 @@
 package com.ingsoftware.securityexample.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import javax.sql.DataSource;
-import java.util.logging.Logger;
 
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    public static final Logger log = Logger.getLogger(SecurityConfiguration.class.getName());
+    private final UserDetailsService userDetailsService;
 
-    private final DataSource dataSource;
-
-    public SecurityConfiguration(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public SecurityConfiguration(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
-            .dataSource(dataSource)
-            .usersByUsernameQuery(
-                    "select username, password, enabled from users where username = ?"
-            )
-            .authoritiesByUsernameQuery(
-                    "select username, authority from authorities where username = ?"
-            );
+        auth.userDetailsService(userDetailsService);
     }
 
     @Override
@@ -42,7 +29,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/admin").hasRole("ADMIN")
                 .antMatchers("/api/user").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/**").permitAll()
-                .and().formLogin();
+                .and().httpBasic();
 
     }
 
