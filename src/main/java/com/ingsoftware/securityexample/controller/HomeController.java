@@ -13,14 +13,4 @@ public class HomeController {
         return "Welcome";
     }
 
-    @GetMapping("/user")
-    public String welcomeFromUserRoute() {
-        return "Welcome from user route";
-    }
-
-    @GetMapping("/admin")
-    public String welcomeFromAdminRoute() {
-        return "Welcome from admin route";
-    }
-
 }
